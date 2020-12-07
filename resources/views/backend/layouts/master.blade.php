@@ -1,4 +1,3 @@
-  
 <!doctype html>
 <html class="no-js" lang="en">
 
@@ -8,6 +7,7 @@
     <title>@yield('title', 'Laravel Role Admin')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @include('backend.layouts.partials.styles')
+    @yield('styles')
 </head>
 
 <body>
@@ -36,6 +36,7 @@
 
     @include('backend.layouts.partials.offsets')
     @include('backend.layouts.partials.scripts')
+    @yield('scripts')
 </body>
 
 </html>
