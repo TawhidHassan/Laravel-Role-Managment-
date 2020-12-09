@@ -29,9 +29,10 @@ class RolesController extends Controller
     public function create()
     {
         $permissions = Permission::all();
+        $all_permissions = Permission::all();
         $permission_groups = User::getpermissionGroups();
         // dd($permission_groups);
-        return view('backend.pages.roles.create', compact('permissions','permission_groups'));
+        return view('backend.pages.roles.create', compact('permissions','permission_groups','all_permissions'));
     }
 
     /**
@@ -82,7 +83,10 @@ class RolesController extends Controller
      */
     public function edit($id)
     {
-        //
+        $role = Role::findById($id);
+        $all_permissions = Permission::all();
+        $permission_groups = User::getpermissionGroups();
+        return view('backend.pages.roles.edit', compact('role', 'all_permissions', 'permission_groups'));
     }
 
     /**
@@ -94,7 +98,22 @@ class RolesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        // Validation Data
+        $request->validate([
+            'name' => 'required|max:100|unique:roles,name,' . $id
+        ], [
+            'name.requried' => 'Please give a role name'
+        ]);
+
+        $role = Role::findById($id);
+        $permissions = $request->input('permissions');
+
+        if (!empty($permissions)) {
+            $role->syncPermissions($permissions);
+        }
+
+        
+        return back();
     }
 
     /**
@@ -105,6 +124,13 @@ class RolesController extends Controller
      */
     public function destroy($id)
     {
-        //
+        
+        $role = Role::findById($id);
+        if (!is_null($role)) {
+            $role->delete();
+        }
+
+        
+        return back();
     }
 }
