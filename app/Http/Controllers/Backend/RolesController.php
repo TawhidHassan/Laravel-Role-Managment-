@@ -10,6 +10,7 @@ use Spatie\Permission\Models\Permission;
 
 class RolesController extends Controller
 {
+    public $user;
     /**
      * Display a listing of the resource.
      *
@@ -17,8 +18,9 @@ class RolesController extends Controller
      */
     public function index()
     {
-      $roles=Role::all();
-      return view('backend.pages.roles.index',compact('roles'));
+    
+        $roles = Role::all();
+        return view('backend.pages.roles.index', compact('roles'));
     }
 
     /**
@@ -28,11 +30,10 @@ class RolesController extends Controller
      */
     public function create()
     {
-        $permissions = Permission::all();
-        $all_permissions = Permission::all();
+    
+        $all_permissions  = Permission::all();
         $permission_groups = User::getpermissionGroups();
-        // dd($permission_groups);
-        return view('backend.pages.roles.create', compact('permissions','permission_groups','all_permissions'));
+        return view('backend.pages.roles.create', compact('all_permissions', 'permission_groups'));
     }
 
     /**
@@ -43,6 +44,7 @@ class RolesController extends Controller
      */
     public function store(Request $request)
     {
+    
 
         // Validation Data
         $request->validate([
@@ -52,7 +54,7 @@ class RolesController extends Controller
         ]);
 
         // Process Data
-        $role = Role::create(['name' => $request->name]);
+        $role = Role::create(['name' => $request->name, 'guard_name' => 'admin']);
 
         // $role = DB::table('roles')->where('name', $request->name)->first();
         $permissions = $request->input('permissions');
@@ -61,6 +63,7 @@ class RolesController extends Controller
             $role->syncPermissions($permissions);
         }
 
+        session()->flash('success', 'Role has been created !!');
         return back();
     }
 
@@ -83,7 +86,7 @@ class RolesController extends Controller
      */
     public function edit($id)
     {
-        $role = Role::findById($id);
+        $role = Role::findById($id, 'admin');
         $all_permissions = Permission::all();
         $permission_groups = User::getpermissionGroups();
         return view('backend.pages.roles.edit', compact('role', 'all_permissions', 'permission_groups'));
@@ -98,6 +101,8 @@ class RolesController extends Controller
      */
     public function update(Request $request, $id)
     {
+        
+
         // Validation Data
         $request->validate([
             'name' => 'required|max:100|unique:roles,name,' . $id
@@ -105,7 +110,7 @@ class RolesController extends Controller
             'name.requried' => 'Please give a role name'
         ]);
 
-        $role = Role::findById($id);
+        $role = Role::findById($id, 'admin');
         $permissions = $request->input('permissions');
 
         if (!empty($permissions)) {
@@ -114,7 +119,7 @@ class RolesController extends Controller
             $role->syncPermissions($permissions);
         }
 
-        
+        session()->flash('success', 'Role has been updated !!');
         return back();
     }
 
@@ -126,13 +131,12 @@ class RolesController extends Controller
      */
     public function destroy($id)
     {
-        
-        $role = Role::findById($id);
+        $role = Role::findById($id, 'admin');
         if (!is_null($role)) {
             $role->delete();
         }
 
-        
+        session()->flash('success', 'Role has been deleted !!');
         return back();
     }
 }
